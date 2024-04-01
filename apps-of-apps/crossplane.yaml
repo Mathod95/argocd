@@ -5,7 +5,7 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    name: default
+    name: management
     namespace: crossplane-system
   project: default
   source:
