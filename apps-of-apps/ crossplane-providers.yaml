@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane
+  namespace: argocd
+spec:
+  destination:
+    name: management
+    namespace: crossplane-system
+  project: default
+  source:
+    repoURL: "https://github.com/Mathod95/argocd.git"
+    targetRevision: HEAD
+    path: "apps/crossplane-providers/"
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
