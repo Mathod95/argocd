@@ -5,9 +5,9 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    name: k8s-pre-production
+    name: default
     namespace: crossplane-system
-  project: preprod
+  project: default
   source:
     repoURL: "https://github.com/Mathod95/argocd.git"
     targetRevision: HEAD
