@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Cluster
+metadata:
+  name: kind-production
+  namespace: argocd
+spec:
+  server: https://127.0.0.1:35023
+  tlsConfig:
+    insecure: true
+  config:
+    name: kind-cluster
+    contexts:
+      - name: kind-production
+        context:
+          cluster: kind-production
+          user: admin
+    users:
+      - name: admin
+        user:
+          token: MDEyMzQ1Njc4OWFiY2RlZg==
