@@ -9,9 +9,12 @@ spec:
     namespace: crossplane-system
   project: management
   source:
-    repoURL: "https://github.com/Mathod95/argocd.git"
+    path: apps/crossplane/
+    repoURL: https://github.com/Mathod95/argocd.git
     targetRevision: HEAD
-    path: "apps/crossplane/"
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
