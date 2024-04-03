@@ -5,9 +5,9 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    name: management
+    name: in-cluster
     namespace: crossplane-system
-  project: management
+  project: default
   source:
     path: apps/crossplane/
     repoURL: https://github.com/Mathod95/argocd.git
