@@ -9,7 +9,7 @@ spec:
     namespace: crossplane-system
   project: default
   source:
-    path: apps/crossplane/
+    path: apps/helm-crossplane/
     repoURL: https://github.com/Mathod95/argocd.git
     targetRevision: HEAD
   syncPolicy:
