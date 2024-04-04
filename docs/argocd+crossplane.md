@@ -58,14 +58,14 @@ kubectl -n argocd port-forward svc/argocd-server 8443:443
 
 Create a session JWT for the admin user at the Argo CD API. *Note:* You cannot use this token directly, because it will expire.
 ```bash
-set ARGOCD_ADMIN_TOKEN $(curl -s -X POST -k -H "Content-Type: application/json" --data '{"username":"admin","password":"'$ARGOCD_ADMIN_SECRET'"}' https://localhost:8443/api/v1/session | jq -r .token)
+set ARGOCD_ADMIN_TOKEN $(curl -s -X POST -k -H "Content-Type: application/json" --data '{"username":"admin","password":"'$ARGOCD_ADMIN_SECRET'"}' https://localhost:8080/api/v1/session | jq -r .token)
 ```
 
 Create an API token without expiration that can be used by `provider-argocd`
 ```bash
 set ARGOCD_PROVIDER_USER "provider-argocd"
 
-set ARGOCD_TOKEN $(curl -s -X POST -k -H "Authorization: Bearer $ARGOCD_ADMIN_TOKEN" -H "Content-Type: application/json" https://localhost:8443/api/v1/account/$ARGOCD_PROVIDER_USER/token | jq -r .token)
+set ARGOCD_TOKEN $(curl -s -X POST -k -H "Authorization: Bearer $ARGOCD_ADMIN_TOKEN" -H "Content-Type: application/json" https://localhost:8080/api/v1/account/$ARGOCD_PROVIDER_USER/token | jq -r .token)
 ```
 
 ### Setup crossplane provider-argocd

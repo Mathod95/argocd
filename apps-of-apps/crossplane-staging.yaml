@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-production
+  namespace: argocd
+spec:
+  destination:
+    name: staging
+    namespace: crossplane-system
+  project: default
+  source:
+    path: apps/helm-crossplane/
+    repoURL: https://github.com/Mathod95/argocd.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
