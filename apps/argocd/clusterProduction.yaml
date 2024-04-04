@@ -8,6 +8,6 @@ spec:
       tlsClientConfig:
         insecure: true
     name: production
-    server: https://127.0.0.1:37803
+    server: https://192.168.1.39:8444
   providerConfigRef:
     name: argocd-provider
