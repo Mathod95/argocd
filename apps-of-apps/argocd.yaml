@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: argocd
+  name: argocd-config
   namespace: argocd
 spec:
   destination:
-    name: in-cluster
+    name: management
     namespace: crossplane-system
   project: default
   source:
