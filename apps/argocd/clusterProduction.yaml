@@ -1,0 +1,13 @@
+apiVersion: cluster.argocd.crossplane.io/v1alpha1
+kind: Cluster
+metadata:
+  name: production
+spec:
+  forProvider:
+    config:
+      tlsClientConfig:
+        insecure: true
+    name: production
+    server: https://127.0.0.1:37803
+  providerConfigRef:
+    name: argocd-provider

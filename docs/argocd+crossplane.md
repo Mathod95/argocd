@@ -1,5 +1,5 @@
-https://github.com/crossplane-contrib/provider-argocd/blob/main/README.md
-# provider-argocd
+
+# [provider-argocd](https://github.com/crossplane-contrib/provider-argocd/blob/main/README.md)
 
 ## Overview
 
