@@ -1,2 +1,5 @@
-apps/stash/crossplane-production.yaml
-apps/stash/crossplane-staging.yaml
+.gitignore
+
+apps-of-apps/crossplane-production.yaml
+apps-of-apps/crossplane-staging.yaml
+
