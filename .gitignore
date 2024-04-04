@@ -3,3 +3,4 @@
 apps-of-apps/crossplane-production.yaml
 apps-of-apps/crossplane-staging.yaml
 
+apps-of-apps/crossplane-providers.yaml
