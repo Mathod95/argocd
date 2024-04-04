@@ -1,3 +1,4 @@
+https://github.com/crossplane-contrib/provider-argocd/blob/main/README.md
 # provider-argocd
 
 ## Overview
@@ -47,7 +48,7 @@ kubectl patch configmap/argocd-rbac-cm \
 
 Get the admin passwort via `kubectl`
 ```bash
-ARGOCD_ADMIN_SECRET=$(kubectl view-secret argocd-initial-admin-secret -n argocd -q)
+set ARGOCD_ADMIN_SECRET $(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo)
 ```
 
 Port forward the Argo CD api to the host:
@@ -57,14 +58,14 @@ kubectl -n argocd port-forward svc/argocd-server 8443:443
 
 Create a session JWT for the admin user at the Argo CD API. *Note:* You cannot use this token directly, because it will expire.
 ```bash
-ARGOCD_ADMIN_TOKEN=$(curl -s -X POST -k -H "Content-Type: application/json" --data '{"username":"admin","password":"'$ARGOCD_ADMIN_SECRET'"}' https://localhost:8443/api/v1/session | jq -r .token)
+set ARGOCD_ADMIN_TOKEN $(curl -s -X POST -k -H "Content-Type: application/json" --data '{"username":"admin","password":"'$ARGOCD_ADMIN_SECRET'"}' https://localhost:8443/api/v1/session | jq -r .token)
 ```
 
 Create an API token without expiration that can be used by `provider-argocd`
 ```bash
-ARGOCD_PROVIDER_USER="provider-argocd"
+set ARGOCD_PROVIDER_USER "provider-argocd"
 
-ARGOCD_TOKEN=$(curl -s -X POST -k -H "Authorization: Bearer $ARGOCD_ADMIN_TOKEN" -H "Content-Type: application/json" https://localhost:8443/api/v1/account/$ARGOCD_PROVIDER_USER/token | jq -r .token)
+set ARGOCD_TOKEN $(curl -s -X POST -k -H "Authorization: Bearer $ARGOCD_ADMIN_TOKEN" -H "Content-Type: application/json" https://localhost:8443/api/v1/account/$ARGOCD_PROVIDER_USER/token | jq -r .token)
 ```
 
 ### Setup crossplane provider-argocd
@@ -104,56 +105,3 @@ spec:
       key: authToken
 EOF
 ```
-
-## Contributing
-
-provider-argocd is a community driven project and we welcome contributions. See
-the Crossplane
-[Contributing](https://github.com/crossplane/crossplane/blob/master/CONTRIBUTING.md)
-guidelines to get started.
-
-## Report a Bug
-
-For filing bugs, suggesting improvements, or requesting new features, please
-open an [issue](https://github.com/crossplane-contrib/provider-argocd/issues).
-
-## Contact
-
-Please use the following to reach members of the community:
-
-* Slack: Join our [slack channel](https://slack.crossplane.io)
-* Forums:
-  [crossplane-dev](https://groups.google.com/forum/#!forum/crossplane-dev)
-* Twitter: [@crossplane_io](https://twitter.com/crossplane_io)
-* Email: [info@crossplane.io](mailto:info@crossplane.io)
-
-## Governance and Owners
-
-provider-argocd is run according to the same
-[Governance](https://github.com/crossplane/crossplane/blob/master/GOVERNANCE.md)
-and [Ownership](https://github.com/crossplane/crossplane/blob/master/OWNERS.md)
-structure as the core Crossplane project.
-
-## Code of Conduct
-
-provider-argocd adheres to the same [Code of
-Conduct](https://github.com/crossplane/crossplane/blob/master/CODE_OF_CONDUCT.md)
-as the core Crossplane project.
-
-
-##########
-set ARGOCD_ADMIN_SECRET $(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo)
-echo $ARGOCD_ADMIN_SECRET
-56RlSfaKIvuWyCSf
-
-kubectl -n argocd port-forward svc/argocd-server 8443:443
-kubectl port-forward -n argocd service/argocd-server 8443:443
-
-
-set ARGOCD_ADMIN_TOKEN $(curl -s -X POST -k -H "Content-Type: application/json" --data '{"username":"admin","password":"'$ARGOCD_ADMIN_SECRET'"}' https://localhost:8443/api/v1/session | jq -r .token)
-echo $ARGOCD_ADMIN_TOKEN
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjpsb2dpbiIsImV4cCI6MTcxMjMwNDYxOCwibmJmIjoxNzEyMjE4MjE4LCJpYXQiOjE3MTIyMTgyMTgsImp0aSI6ImI5NmI2Y2VkLWQ3OWYtNDRkMi05YTg4LWVjMDU3NTFhMjgwOSJ9.qaPDPDBQBvmZfGWvdi9M7bUJJ5Bo3TGPy6pnxoHs7f8
-
-set ARGOCD_PROVIDER_USER "provider-argocd"
-
-set ARGOCD_TOKEN $(curl -s -X POST -k -H "Authorization: Bearer $ARGOCD_ADMIN_TOKEN" -H "Content-Type: application/json" https://localhost:8443/api/v1/account/$ARGOCD_PROVIDER_USER/token | jq -r .token)

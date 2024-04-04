@@ -1,0 +1,10 @@
+apiVersion: projects.argocd.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  name: production
+spec:
+  forProvider:
+    projectLabels:
+      argocd.crossplane.io/global-project: "true"
+  providerConfigRef:
+    name: argocd-provider
