@@ -1,0 +1,159 @@
+# provider-argocd
+
+## Overview
+
+`provider-argocd` is the Crossplane infrastructure provider for
+[Argo CD](https://argo-cd.readthedocs.io/). The provider that is built from the source code
+in this repository can be installed into a Crossplane control plane and adds the
+following new functionality:
+
+* Custom Resource Definitions (CRDs) that model Argo CD resources
+* Controllers to provision these resources in Argo CD based on the users desired
+  state captured in CRDs they create
+* Implementations of Crossplane's portable resource
+  abstractions, enabling
+  Argo CD resources to fulfill a user's general need for Argo CD configurations
+
+## Getting Started and Documentation
+
+Follow the [official docs](https://crossplane.io/docs/master/getting-started/install-configure.html#install-crossplane) to install crossplane, then these steps to get started with `provider-argocd`.
+
+### Optional: Start a local Argo CD server
+```bash
+kind create cluster
+
+kubectl create ns argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+### Create a new Argo CD user
+
+Follow the steps in the [official documentation](https://argoproj.github.io/argo-cd/operator-manual/user-management/) to create a new user `provider-argcod`:
+
+```bash
+kubectl patch configmap/argocd-cm \
+  -n argocd \
+  --type merge \
+  -p '{"data":{"accounts.provider-argocd":"apiKey"}}'
+
+kubectl patch configmap/argocd-rbac-cm \
+  -n argocd \
+  --type merge \
+  -p '{"data":{"policy.csv":"g, provider-argocd, role:admin"}}'
+```
+
+### Create an API Token
+
+*Note:* The following steps require the [kubectl-view-secret](https://github.com/elsesiy/kubectl-view-secret) plugin and [jq](https://stedolan.github.io/jq/) to be installed.
+
+Get the admin passwort via `kubectl`
+```bash
+ARGOCD_ADMIN_SECRET=$(kubectl view-secret argocd-initial-admin-secret -n argocd -q)
+```
+
+Port forward the Argo CD api to the host:
+```bash
+kubectl -n argocd port-forward svc/argocd-server 8443:443
+```
+
+Create a session JWT for the admin user at the Argo CD API. *Note:* You cannot use this token directly, because it will expire.
+```bash
+ARGOCD_ADMIN_TOKEN=$(curl -s -X POST -k -H "Content-Type: application/json" --data '{"username":"admin","password":"'$ARGOCD_ADMIN_SECRET'"}' https://localhost:8443/api/v1/session | jq -r .token)
+```
+
+Create an API token without expiration that can be used by `provider-argocd`
+```bash
+ARGOCD_PROVIDER_USER="provider-argocd"
+
+ARGOCD_TOKEN=$(curl -s -X POST -k -H "Authorization: Bearer $ARGOCD_ADMIN_TOKEN" -H "Content-Type: application/json" https://localhost:8443/api/v1/account/$ARGOCD_PROVIDER_USER/token | jq -r .token)
+```
+
+### Setup crossplane provider-argocd
+
+Install provider-argocd:
+```bash
+cat << EOF | kubectl apply -f -
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-argocd
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/provider-argocd:v0.2.0
+EOF
+```
+Create a kubernetes secret from the JWT so `provider-argocd` is able to connect to Argo CD:
+```bash
+kubectl create secret generic argocd-credentials -n crossplane-system --from-literal=authToken="$ARGOCD_TOKEN"
+```
+
+Configure a `ProviderConfig` with `serverAddr` pointing to an Argo CD instance:
+```bash
+cat << EOF | kubectl apply -f -
+apiVersion: argocd.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: argocd-provider
+spec:
+  serverAddr: argocd-server.argocd.svc:443
+  insecure: true
+  plainText: false
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: argocd-credentials
+      key: authToken
+EOF
+```
+
+## Contributing
+
+provider-argocd is a community driven project and we welcome contributions. See
+the Crossplane
+[Contributing](https://github.com/crossplane/crossplane/blob/master/CONTRIBUTING.md)
+guidelines to get started.
+
+## Report a Bug
+
+For filing bugs, suggesting improvements, or requesting new features, please
+open an [issue](https://github.com/crossplane-contrib/provider-argocd/issues).
+
+## Contact
+
+Please use the following to reach members of the community:
+
+* Slack: Join our [slack channel](https://slack.crossplane.io)
+* Forums:
+  [crossplane-dev](https://groups.google.com/forum/#!forum/crossplane-dev)
+* Twitter: [@crossplane_io](https://twitter.com/crossplane_io)
+* Email: [info@crossplane.io](mailto:info@crossplane.io)
+
+## Governance and Owners
+
+provider-argocd is run according to the same
+[Governance](https://github.com/crossplane/crossplane/blob/master/GOVERNANCE.md)
+and [Ownership](https://github.com/crossplane/crossplane/blob/master/OWNERS.md)
+structure as the core Crossplane project.
+
+## Code of Conduct
+
+provider-argocd adheres to the same [Code of
+Conduct](https://github.com/crossplane/crossplane/blob/master/CODE_OF_CONDUCT.md)
+as the core Crossplane project.
+
+
+##########
+set ARGOCD_ADMIN_SECRET $(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo)
+echo $ARGOCD_ADMIN_SECRET
+56RlSfaKIvuWyCSf
+
+kubectl -n argocd port-forward svc/argocd-server 8443:443
+kubectl port-forward -n argocd service/argocd-server 8443:443
+
+
+set ARGOCD_ADMIN_TOKEN $(curl -s -X POST -k -H "Content-Type: application/json" --data '{"username":"admin","password":"'$ARGOCD_ADMIN_SECRET'"}' https://localhost:8443/api/v1/session | jq -r .token)
+echo $ARGOCD_ADMIN_TOKEN
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjpsb2dpbiIsImV4cCI6MTcxMjMwNDYxOCwibmJmIjoxNzEyMjE4MjE4LCJpYXQiOjE3MTIyMTgyMTgsImp0aSI6ImI5NmI2Y2VkLWQ3OWYtNDRkMi05YTg4LWVjMDU3NTFhMjgwOSJ9.qaPDPDBQBvmZfGWvdi9M7bUJJ5Bo3TGPy6pnxoHs7f8
+
+set ARGOCD_PROVIDER_USER "provider-argocd"
+
+set ARGOCD_TOKEN $(curl -s -X POST -k -H "Authorization: Bearer $ARGOCD_ADMIN_TOKEN" -H "Content-Type: application/json" https://localhost:8443/api/v1/account/$ARGOCD_PROVIDER_USER/token | jq -r .token)
