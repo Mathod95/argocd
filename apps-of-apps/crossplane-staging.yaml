@@ -7,7 +7,7 @@ spec:
   destination:
     name: staging
     namespace: crossplane-system
-  project: staging
+  project: default
   source:
     path: apps/helm-crossplane/
     repoURL: https://github.com/Mathod95/argocd.git
